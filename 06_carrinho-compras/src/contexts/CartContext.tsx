@@ -1,4 +1,11 @@
-import { ReactNode, createContext, useContext, useState } from "react";
+// CartContext.tsx
+import {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ICartItem, ProductDTO } from "../types/Product";
 import { showError } from "../utils/Toast";
@@ -7,7 +14,8 @@ type CartContextProps = {
   cart: ICartItem[];
   getCart: () => void;
   addProduct: (product: ProductDTO) => void;
-  removeProduct: (id: number) => void; // Ou remover enviando o produto todo e desestruturar na função
+  removeProduct: (id: number) => void;
+  getTotalPrice: () => number; // Adiciona função para calcular o total
 };
 
 type CartProviderProps = {
@@ -35,49 +43,58 @@ export const CartContextProvider = ({ children }: CartProviderProps) => {
   const getCart = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem("@cart");
-      const cartData = jsonValue !== null ? JSON.parse(jsonValue) : null;
+      const cartData = jsonValue ? JSON.parse(jsonValue) : [];
       setCart(cartData);
     } catch (error) {
       showError("Não foi possível recuperar o carrinho");
     }
   };
 
-  const addProduct = (value: ProductDTO) => {
-    const existingProduct = cart.find(({ product }) => value.id === product.id);
+  useEffect(() => {
+    getCart();
+  }, []);
+
+  const addProduct = (product: ProductDTO) => {
+    const existingProduct = cart.find(({ product: p }) => p.id === product.id);
 
     if (existingProduct) {
       const newCart = cart.map((item) =>
-        item.product.id === existingProduct.product.id
-          ? { ...item, quantity: item.quantity ? item.quantity + 1 : 1 }
+        item.product.id === product.id
+          ? { ...item, quantity: item.quantity + 1 }
           : item
       );
-
       setCart(newCart);
       storeCart(newCart);
     } else {
-      const newCart = [...cart];
-      const data: ICartItem = { product: value, quantity: 1 };
-      newCart.push(data);
+      const newCart = [...cart, { product, quantity: 1 }];
       setCart(newCart);
       storeCart(newCart);
     }
   };
 
   const removeProduct = (id: number) => {
-    /*
-     Pega o array que contém os produtos que estão no carrinho
-     Deixa passar somente os itens que atendem a condição
-     Atribui à variável os item que passaram na condição
-    */
-    const newCart = cart.filter((c) => c.product.id !== id);
-    // Salva no state (memória provisória enquanto o app está executando)
+    const newCart = cart
+      .map((item) =>
+        item.product.id === id ? { ...item, quantity: item.quantity - 1 } : item
+      )
+      .filter((item) => item.quantity > 0);
+
     setCart(newCart);
-    // Salva na memória permanente do aparelho
     storeCart(newCart);
   };
 
+  // Função para calcular o preço total do carrinho
+  const getTotalPrice = () => {
+    return cart.reduce(
+      (total, item) => total + item.product.price * item.quantity,
+      0
+    );
+  };
+
   return (
-    <CartContext.Provider value={{ cart, getCart, addProduct, removeProduct }}>
+    <CartContext.Provider
+      value={{ cart, getCart, addProduct, removeProduct, getTotalPrice }}
+    >
       {children}
     </CartContext.Provider>
   );

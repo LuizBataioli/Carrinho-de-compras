@@ -8,8 +8,11 @@ import OrderStatus from "../screens/OrderStatus";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import UserDetails from "../screens/UserDetails";
 import MenuHeader from "../components/MenuHeader";
+import { RootStackParamList } from "../types/Types"; // Importe o tipo de rotas
 
-const ProductStack = createNativeStackNavigator();
+const ProductStack = createNativeStackNavigator<RootStackParamList>(); // Aplicar a tipagem aqui
+
+
 
 const ProductRoutes = () => {
   return (
