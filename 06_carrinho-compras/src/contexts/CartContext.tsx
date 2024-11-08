@@ -15,7 +15,8 @@ type CartContextProps = {
   getCart: () => void;
   addProduct: (product: ProductDTO) => void;
   removeProduct: (id: number) => void;
-  getTotalPrice: () => number; // Adiciona função para calcular o total
+  getTotalPrice: () => number;
+  clearCart: () => void; // Adiciona a função clearCart
 };
 
 type CartProviderProps = {
@@ -83,7 +84,6 @@ export const CartContextProvider = ({ children }: CartProviderProps) => {
     storeCart(newCart);
   };
 
-  // Função para calcular o preço total do carrinho
   const getTotalPrice = () => {
     return cart.reduce(
       (total, item) => total + item.product.price * item.quantity,
@@ -91,9 +91,26 @@ export const CartContextProvider = ({ children }: CartProviderProps) => {
     );
   };
 
+  // Função para limpar o carrinho
+  const clearCart = async () => {
+    try {
+      await AsyncStorage.removeItem("@cart");
+      setCart([]);
+    } catch (error) {
+      showError("Erro ao limpar o carrinho");
+    }
+  };
+
   return (
     <CartContext.Provider
-      value={{ cart, getCart, addProduct, removeProduct, getTotalPrice }}
+      value={{
+        cart,
+        getCart,
+        addProduct,
+        removeProduct,
+        getTotalPrice,
+        clearCart, // Disponibiliza a função clearCart
+      }}
     >
       {children}
     </CartContext.Provider>

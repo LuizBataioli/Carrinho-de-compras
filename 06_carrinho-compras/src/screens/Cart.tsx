@@ -1,23 +1,21 @@
-import React, { useEffect } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import { StyleSheet, Text, View, FlatList, Image, Button } from "react-native";
+import React from "react";
 import { useCartContext } from "../contexts/CartContext";
+import { useNavigation } from "@react-navigation/native";
 
 const Cart = () => {
-  const { cart, getCart, removeProduct, getTotalPrice } = useCartContext();
+  const { cart, removeProduct } = useCartContext();
+  const navigation = useNavigation();
 
-  useEffect(() => {
-    getCart();
-  }, []);
+  // Calcula o valor total
+  const totalAmount = cart.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>Meu Carrinho</Text>
       <FlatList
         data={cart}
         keyExtractor={(item) => item.product.id.toString()}
@@ -25,24 +23,26 @@ const Cart = () => {
           <View style={styles.itemContainer}>
             <Image source={{ uri: item.product.image }} style={styles.image} />
             <View style={styles.infoContainer}>
-              <Text style={styles.title}>{item.product.title}</Text>
+              <Text style={styles.productTitle}>{item.product.title}</Text>
               <Text>Quantidade: {item.quantity}</Text>
-              <Text style={styles.price}>Preço: ${item.product.price}</Text>
+              <Text>
+                Preço: R$ {(item.product.price * item.quantity).toFixed(2)}
+              </Text>
+              <Button
+                title="Remover"
+                color="#cc0000"
+                onPress={() => removeProduct(item.product.id)}
+              />
             </View>
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => removeProduct(item.product.id)}
-            >
-              <Text style={styles.removeButtonText}>Remover</Text>
-            </TouchableOpacity>
           </View>
         )}
       />
-      <View style={styles.totalContainer}>
-        <Text style={styles.totalText}>
-          Total: ${getTotalPrice().toFixed(2)}
-        </Text>
-      </View>
+      <Text style={styles.total}>Total: R$ {totalAmount.toFixed(2)}</Text>
+      <Button
+        title="Finalizar Compra"
+        onPress={() => navigation.navigate("Payment")}
+        color="#28a745"
+      />
     </View>
   );
 };
@@ -51,52 +51,38 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: "#fff",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
   itemContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-    backgroundColor: "#f8f8f8",
-    padding: 10,
-    borderRadius: 8,
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    paddingBottom: 10,
   },
   image: {
-    width: 60,
-    height: 60,
-    resizeMode: "contain",
+    width: 80,
+    height: 80,
     marginRight: 10,
   },
   infoContainer: {
     flex: 1,
-    justifyContent: "center",
   },
-  title: {
+  productTitle: {
     fontSize: 16,
     fontWeight: "bold",
   },
-  price: {
-    fontSize: 14,
-    color: "green",
-  },
-  removeButton: {
-    backgroundColor: "#ff6347",
-    padding: 8,
-    borderRadius: 5,
-  },
-  removeButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  totalContainer: {
-    padding: 15,
-    borderTopWidth: 1,
-    borderColor: "#ddd",
-    alignItems: "center",
-  },
-  totalText: {
-    fontSize: 18,
+  total: {
+    fontSize: 20,
     fontWeight: "bold",
     color: "green",
+    marginVertical: 20,
+    textAlign: "center",
   },
 });
 
