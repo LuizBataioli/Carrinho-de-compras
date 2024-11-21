@@ -7,7 +7,7 @@
 </head>
 <body>
 
-<p>Carrinho de Compras - Aplicação de Pagamento e Entrega</p>
+<title>Carrinho de Compras - Aplicação de Pagamento e Entrega</title>
 
 <p>Este projeto é uma aplicação de <strong>Carrinho de Compras</strong> com uma interface de pagamento desenvolvida em <strong>React Native</strong>. A aplicação permite que o usuário selecione produtos, adicione ao carrinho, insira detalhes de pagamento e finalize a compra.</p>
 
